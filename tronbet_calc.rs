@@ -6,25 +6,26 @@ fn main() {
     // let secret_number = rand::thread_rng().gen_range(0, 100) as f64;
 
     let trx_banked = 0.0;
-    let mut trx = 10_000.00; // 25_000 TRX is ideal start amount
+    let mut trx = 25_000.00; // 25_000 TRX is ideal start amount
     let total_ante = 5_701.334; // 43_245.9 TRX
     let mut ante_mined = 0.0;
     
-    let multiplier = 1.048; // 95% @ 1.037 is ideal; 19/20 bets should win
-    let ante_stage = 1_000.0 + (10.0 * 2.0f64.powf(2.0));
-    let max_wager_per_day = 30;
-    let wager_period = 1; // days
+    let multiplier = 1.048; // .059 .071 // 95% @ 1.037 is ideal; 19/20 bets should win
+    let ante_stage = 1_000.0 + (10.0 * 2.0f64.powf(1.0));
+    let max_wager_per_day = 20;
+    let wager_period = 5; // days
     let tb_max_bet = 135_500.0;
     
     // loop {}
+    // loop for 200 (signifies bets)
     for w in 1..(max_wager_per_day * wager_period + 1) {
-        // if loss % 20 bet 10 * 24 multiplier
+        // if total_bets % 20 bet 10 * 24 multiplier
 
         // TRONbet's max wager amount is around 136_000 TRX
-        if trx < 272_000.0 {
-            ante_mined += trx / ante_stage;
-            trx += ((trx / 2.0) * multiplier) - (trx / 2.0);
-        } /*else {
+        // if trx < 272_000.0 {
+        ante_mined += (trx / 2.0) / ante_stage;
+        trx += ((trx / 2.0) * multiplier) - (trx / 2.0);
+        /*} else {
             ante_mined += tb_max_bet / ante_stage;
             trx += tb_max_bet * multiplier - tb_max_bet; 
         }*/
