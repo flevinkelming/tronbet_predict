@@ -3,15 +3,17 @@ extern crate rand; // 0.5.5
 use rand::Rng;
 
 fn main() {
-    let _trx_bank = 0.0;
+    let mut _trx_bank = 0.0;
     let mut trx = 10_000.0;
+    let mut bank_at = 25_000.0;
     let _ante_bank = 6_291.0;
     let mut ante = 0.0;
     
     let multiplier = 0.107; // x1.107; 89% win chance
+    let losing_number = 10;
     let mining_stage = 2.0; // 1-3
     let trx_per_ante = 1_000.0 + (20.0 * mining_stage);
-    let days = 20;
+    let days = 10;
     
     let mut total_bets = 0.0;
     // let mut avg_roll = 0.0;
@@ -39,7 +41,7 @@ fn main() {
             
             let random_number = rand::thread_rng().gen_range(0, 100);
             
-            if random_number > 10 {
+            if random_number > losing_number {
                 current_roll.push('w');
             } else {
                 current_roll.push('l');
@@ -103,6 +105,14 @@ fn main() {
             reg_ratio_ptg,
             
         );
+        
+        // Bank half and raise the next threshold to twice the amount
+        // of `bank_at`
+        if trx > bank_at {
+            trx /= 2.0;
+            _trx_bank += trx * 2.0;
+            bank_at *= 2.0;
+        }
     }
     
     let dividends = fmt_f((ante + _ante_bank) * 9.5 * 0.023);
