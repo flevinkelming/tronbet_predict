@@ -3,117 +3,113 @@ extern crate rand; // 0.5.5
 use rand::Rng;
 
 fn main() {
-    let trx_bank = 4_000.0;
-    let mut trx = 10_000.00;
-    let _ante_bank = 5_701.00;
-    let mut ante_mined = 0.0;
-    let basic = 10.0; // 100 seems to be the most profitable
+    let _trx_bank = 0.0;
+    let mut trx = 10_000.0;
+    let _ante_bank = 6_291.0;
+    let mut ante = 0.0;
     
-    let multiplier = 1.037; // .037, .059, .071; 95% @ 1.037 is ideal
-    let ante_stage = 1_000.0 + (10.0 * 2.0f64.powf(1.0));
-    // let max_bets_per_day = 20;
-    let bet_cycle = 5;
-    
-    let mut current = String::new();
-    let mut previous = String::new();
+    let multiplier = 0.107; // x1.107; 89% win chance
+    let mining_stage = 2.0; // 1-3
+    let trx_per_ante = 1_000.0 + (20.0 * mining_stage);
+    let days = 20;
     
     let mut total_bets = 0.0;
-    let mut max_bets = 0.0;
+    // let mut avg_roll = 0.0;
+    let mut max_bets_hit = 0.0;
     let mut total_max_bets = 0.0;
-    let mut basic_bets = 0.0;
-    let mut total_basic_bets = 0.0;
+    let mut reg_bets_hit = 0.0;
+    let mut total_reg_bets = 0.0;
+    
+    let mut current_roll = String::new();
+    let mut prev_roll = String::new();
     
     let mut start = true;
+    let mut harbinger_of_losses = false;
     
-    for s in 1..(bet_cycle + 1) {
-        while total_bets < (500.0 * (s as f64)) {
+    for d in 1..(days + 1) {
+        while total_bets < (500.0 * d as f64) {
             if !start {
-                previous.pop();
+                prev_roll.pop();
             }
-        
-            match current.pop() {
-                Some(c) => previous.push(c),
+            
+            match current_roll.pop() {
+                Some(c) => prev_roll.push(c),
                 _ => (),
             }
-        
-            let random_number = rand::thread_rng().gen_range(0, 100) as f64;
             
-            if random_number > 4.0 {
-                current.push('w');
+            let random_number = rand::thread_rng().gen_range(0, 100);
+            
+            if random_number > 10 {
+                current_roll.push('w');
             } else {
-                current.push('l');
+                current_roll.push('l');
             }
             
-            let half_trx = trx / 2.0;
+            let recoup_bet = trx * 0.25;
+            let reg_bet = recoup_bet * 0.10;
             
             if start {
-                if current == "w" {
-                    trx += half_trx * multiplier - half_trx;
+                if current_roll == "w".to_string() {
+                    trx += reg_bet * multiplier;
+                    reg_bets_hit += 1.0;
                 } else {
-                    trx -= half_trx;
+                    trx -= reg_bet;
                 }
                 
-                ante_mined += half_trx / ante_stage;
+                ante += reg_bet / trx_per_ante;
+                total_reg_bets += 1.0;
                 start = false;
-            } else if previous == "l" {
-                if current == "w" {
-                    trx += half_trx * multiplier - half_trx;
-                    max_bets += 1.0;
+            } else if prev_roll == "l" {
+                if current_roll == "w".to_string() {
+                    trx += recoup_bet * multiplier;
+                    max_bets_hit += 1.0;
+                    
+                    ante += recoup_bet / trx_per_ante;
+                } else if harbinger_of_losses {
+                    trx += (trx * 0.50) * multiplier;
+                    max_bets_hit += 1.0;
+                    harbinger_of_losses = false;
+                    
+                    ante += (trx * 0.50) / trx_per_ante;
                 } else {
-                    trx -= half_trx;
+                    trx -= recoup_bet;
+                    harbinger_of_losses = true;
                 }
                 
                 total_max_bets += 1.0;
-                ante_mined += half_trx / ante_stage;
-                
-            // Change `10` to variable for adjustment, e.g. to `1_000`
-            } else if total_bets % 18.0 == 0.0 {
-                if current == "w" {
-                    trx += 10.0 * 24.0;
-                    basic_bets += 1.0;
+            } else {
+                if current_roll == "w".to_string() {
+                    trx += reg_bet * multiplier;
+                    reg_bets_hit += 1.0;
                 } else {
-                    trx -= 10.0;
+                    trx -= reg_bet;
                 }
                 
-                total_basic_bets += 1.0;
-                ante_mined += 10.0 / ante_stage;
-            } else if !start {
-                if current == "w" {
-                    trx += basic * multiplier - basic;
-                    basic_bets += 1.0;
-                } else {
-                    trx -= basic;
-                }
-                
-                total_basic_bets += 1.0;
-                ante_mined += basic / ante_stage;
+                ante += reg_bet / trx_per_ante;
+                total_reg_bets += 1.0;
             }
-
+            
             total_bets += 1.0;
         }
         
-        if trx < 0.0 {
-            println!("You're wiped!");
-            break
-        }
-        
         let usd_value = fmt_f(trx * 0.025);
-        let max_ratio_ptg = fmt_f((max_bets / total_max_bets) * 100.0);
-        let basic_ratio_ptg = fmt_f((basic_bets / total_basic_bets) * 100.0);
+        let max_ratio_ptg = fmt_f((max_bets_hit / total_max_bets) * 100.0);
+        let reg_ratio_ptg = fmt_f((reg_bets_hit / total_reg_bets) * 100.0);
         
         println!("Day {}\tEnding TRX:\t{} (${})\n\tANTE Gained:\t{}\n \
-            \tMax Ratio:\t{}/{} ({}%)\n\tBasic Ratio:\t{}/{} ({}%)\n",
-            s, fmt_f(trx), usd_value, fmt_f(ante_mined), max_bets,
-            total_max_bets, max_ratio_ptg, basic_bets, total_basic_bets,
-            basic_ratio_ptg);
+            \tMax Ratio:\t{}/{} ({}%)\n\tReg. Ratio:\t{}/{} ({}%)\n",
+            d, fmt_f(trx), usd_value, fmt_f(ante), max_bets_hit,
+            total_max_bets, max_ratio_ptg, reg_bets_hit, total_reg_bets,
+            reg_ratio_ptg,
+            
+        );
     }
     
-    let dividends = fmt_f(ante_mined * 8.3 * 0.023);
+    let dividends = fmt_f((ante + _ante_bank) * 9.5 * 0.023);
     println!("Total TRX:\t{}\nTotal ANTE:\t{} (${} per payout)\nUSD Value:\t${}",
-        fmt_f(trx+trx_bank), fmt_f(ante_mined), dividends,
-        fmt_f((trx+trx_bank+ante_mined*8.5) * 0.025)
+        fmt_f(trx +_ trx_bank), fmt_f(ante + _ante_bank), dividends,
+        fmt_f((trx +_ trx_bank + (ante + _ante_bank * 9.5)) * 0.023)
     );
-    
 }
 
 fn fmt_f(f: f64) -> String {
