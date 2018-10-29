@@ -107,8 +107,8 @@ fn main() {
     
     let dividends = fmt_f((ante + _ante_bank) * 9.5 * 0.023);
     println!("Total TRX:\t{}\nTotal ANTE:\t{} (${} per payout)\nUSD Value:\t${}",
-        fmt_f(trx +_ trx_bank), fmt_f(ante + _ante_bank), dividends,
-        fmt_f((trx +_ trx_bank + (ante + _ante_bank * 9.5)) * 0.023)
+        fmt_f(trx + _trx_bank), fmt_f(ante + _ante_bank), dividends,
+        fmt_f((trx + _trx_bank + (ante + _ante_bank * 9.5)) * 0.023)
     );
 }
 
