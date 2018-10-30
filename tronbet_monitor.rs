@@ -136,10 +136,10 @@ fn main() {
         print!("{}[H{}[2J", 27 as char, 27 as char);
         io::stdout().flush().unwrap();
         
-        println!("\n\n\n\t\tTotal: {}/{}\tReg: {}/{} ({}%)\tMax: {}/{} ({}%)\n \
+        println!("\n\n\n\t\tTotal: {}/{}\tReg: {}/{} ({}%)\tMax: {}/{} ({}%)\n\n \
             \t\tAverage: {}\tStreak: {}\tNext Bet: {}",
             total_num, total_denom, reg_bets_hit, total_reg_bets, reg_ptg,
-            max_bets_hit, total_max_bets, max_ptg, avg, streak, next_bet
+            max_bets_hit, total_max_bets, max_ptg, avg as u32, streak, fmt_f(next_bet)
         );
     }
 }
